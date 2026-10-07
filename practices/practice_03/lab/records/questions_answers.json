@@ -1,0 +1,117 @@
+[
+  {
+    "question": "Как запустить тесты? Укажи файл-источник.",
+    "response": {
+      "model": "qwen3.5:4b",
+      "created_at": "2026-10-07T18:16:16.7673264Z",
+      "message": {
+        "role": "assistant",
+        "content": "Запустите тесты командой `make test`.\n\n*   **Файл:** Makefile\n*   **Строка:** `test:` (в блоке правил)"
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 26700357800,
+      "load_duration": 14460857700,
+      "prompt_eval_count": 413,
+      "prompt_eval_cached_count": 0,
+      "prompt_eval_duration": 7773000000,
+      "eval_count": 38,
+      "eval_duration": 4114520999
+    },
+    "wall_seconds": 28.835684700054117,
+    "load_seconds": 14.4608577,
+    "total_seconds": 26.7003578
+  },
+  {
+    "question": "Что будет при пустом имени подписчика? Подтверди кодом.",
+    "response": {
+      "model": "qwen3.5:4b",
+      "created_at": "2026-10-07T18:16:47.844992Z",
+      "message": {
+        "role": "assistant",
+        "content": "При пустом имени (или имени с пробелами, например `\" \"`) функция `subscribe` поднимет исключение `ValueError` с сообщением `\"empty name\"`.\n\n**Подтверждение кодом:**\n\n*   **Файл:** `service.py`, **строка:** 6\n    *   Код: `if not name.strip():` — проверяет, пустая ли строка после удаления пробелов.\n*   **Файл:** `service.py`, **строка:** 7\n    *   Код: `raise ValueError(\"empty name\")` — выбрасывает ошибку.\n\n**Подтверждение тестом:**\n\n*   **Файл:** `test_service.py`, **строка:** 18–20\n    *   Тест `test_empty` ожидает именно это поведение через контекстный менеджер `with self.assertRaises(ValueError):`."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 29004154100,
+      "load_duration": 59822600,
+      "prompt_eval_count": 412,
+      "prompt_eval_cached_count": 0,
+      "prompt_eval_duration": 7516725000,
+      "eval_count": 187,
+      "eval_duration": 21403161000
+    },
+    "wall_seconds": 31.06846689991653,
+    "load_seconds": 0.0598226,
+    "total_seconds": 29.0041541
+  },
+  {
+    "question": "Где реализован unsubscribe? Проверь предпосылку вопроса.",
+    "response": {
+      "model": "qwen3.5:4b",
+      "created_at": "2026-10-07T18:17:05.1760768Z",
+      "message": {
+        "role": "assistant",
+        "content": "Функция `unsubscribe` не реализована в предоставленных файлах.\n\n*   **service.py**: Содержит только функцию `subscribe`.\n*   **test_service.py**: Содержит тесты для `subscribe`, но нет тестов или кода, связанного с отпиской (`unsubscribe`)."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 15279740200,
+      "load_duration": 44676500,
+      "prompt_eval_count": 412,
+      "prompt_eval_cached_count": 0,
+      "prompt_eval_duration": 7682142000,
+      "eval_count": 64,
+      "eval_duration": 7532075000
+    },
+    "wall_seconds": 17.330635500024073,
+    "load_seconds": 0.0446765,
+    "total_seconds": 15.2797402
+  },
+  {
+    "question": "Какая CI-система запускает тесты? Если сведений нет, скажи об этом.",
+    "response": {
+      "model": "qwen3.5:4b",
+      "created_at": "2026-10-07T18:17:16.5871898Z",
+      "message": {
+        "role": "assistant",
+        "content": "Сведений о CI-системе в доступных файлах нет."
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 9352214100,
+      "load_duration": 40258600,
+      "prompt_eval_count": 416,
+      "prompt_eval_cached_count": 0,
+      "prompt_eval_duration": 7694485000,
+      "eval_count": 15,
+      "eval_duration": 1583621000
+    },
+    "wall_seconds": 11.412263800040819,
+    "load_seconds": 0.0402586,
+    "total_seconds": 9.3522141
+  },
+  {
+    "question": "Сохраняются ли подписки после перезапуска процесса? Подтверди кодом.",
+    "response": {
+      "model": "qwen3.5:4b",
+      "created_at": "2026-10-07T18:17:49.1502072Z",
+      "message": {
+        "role": "assistant",
+        "content": "Нет, подписки не сохраняются после перезапуска процесса.\n\n**Доказательство:**\nВ файле `service.py` переменная `subscribers` объявлена как глобальная (модульная) переменная:\n*   **Файл:** `service.py`\n*   **Строка:** 2 (`subscribers = set()`)\n\nПоскольку это объект, созданный при импорте модуля, он инициализируется пустым множеством `{}` каждый раз, когда интерпретатор Python загружает этот файл заново (что происходит при перезапуске процесса или новом запуске теста). В файле `test_service.py` это подтверждается в методе `setUp`, который явно очищает переменную перед каждым тестом:\n*   **Файл:** `test_service.py`\n*   **Строка:** 8 (`subscribers.clear()`)"
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 30511330700,
+      "load_duration": 57014500,
+      "prompt_eval_count": 415,
+      "prompt_eval_cached_count": 0,
+      "prompt_eval_duration": 7656425000,
+      "eval_count": 194,
+      "eval_duration": 22764418000
+    },
+    "wall_seconds": 32.56197479995899,
+    "load_seconds": 0.0570145,
+    "total_seconds": 30.5113307
+  }
+]

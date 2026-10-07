@@ -1,4 +1,4 @@
-.PHONY: install test experiment-baseline experiment-system questions
+.PHONY: install test experiment-baseline experiment-system questions compare
 install:
 	@python3 -c "import sys; assert sys.version_info >= (3,10), 'Python 3.10+ required'; print('Standard library only: ready')"
 test: install
@@ -16,4 +16,8 @@ experiment-system:
 questions:
 	@mkdir -p records 2>/dev/null || true
 	python3 run_questions.py
+
+compare:
+	@mkdir -p records 2>/dev/null || true
+	python3 compare_answers.py
 
