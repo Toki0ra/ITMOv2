@@ -1,0 +1,49 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "model": "ollama/itmo-agent",
+  "small_model": "ollama/itmo-agent",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama local",
+      "options": { "baseURL": "http://localhost:11434/v1" },
+      "models": {
+        "itmo-agent": {
+          "name": "ITMO local 64k",
+          "limit": { "context": 65536, "output": 4096 }
+        }
+      }
+    }
+  },
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
+  "agent": {
+    "local-guide": {
+      "description": "Practice 04 assistant with skill and MCP",
+      "mode": "primary",
+      "prompt": "{file:./AGENTS.md}",
+      "steps": 8,
+      "permission": {
+        "*": "deny",
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "skill": "allow",
+        "bash": {"*": "ask"}
+      }
+    }
+  },
+  "mcp": {
+    "practice-calc": {
+      "type": "local",
+      "command": ["python", "-u", ".opencode/mcp/calc_server.py"],
+      "enabled": true
+    }
+  },
+  "experimental": {
+    "primary_tools": ["edit"],
+    "mcp_timeout": 60000
+  }
+}
