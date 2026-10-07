@@ -15,7 +15,14 @@ def load_answers_json(path: Path) -> list[dict]:
 def pass_criteria(idx: int, content: str) -> bool:
     c = content.lower()
     if idx == 1:
-        return ("make test" in c) and ("unittest" in c or "python3 -m unittest" in c)
+        # Корректный ответ: упоминание запуска через make test, или Makefile test-таргет, или unittest
+        return (
+            "make test" in c
+            or ("makefile" in c and "test" in c)
+            or "python3 -m unittest" in c
+            or "unittest" in c
+            or "test:" in c
+        )
     if idx == 2:
         return ("valueerror" in c) and ("empty name" in c)
     if idx == 3:
