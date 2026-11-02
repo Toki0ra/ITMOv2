@@ -14,10 +14,11 @@ def main():
     p.add_argument("--output", required=True)
     args = p.parse_args()
     root = Path(__file__).resolve().parent
-    context = (root / "demo/README.md").read_text()
+    # Read files as UTF-8 explicitly to avoid Windows cp1251 decode errors
+    context = (root / "demo/README.md").read_text(encoding="utf-8")
     messages = []
     if args.mode == "system":
-        messages.append({"role": "system", "content": (root / "system.txt").read_text()})
+        messages.append({"role": "system", "content": (root / "system.txt").read_text(encoding="utf-8")})
     messages.append({"role": "user", "content": context + "\nКакая CI-система запускает тесты проекта?"})
     payload = {"model": args.model, "messages": messages, "stream": False, "think": False,
                "options": {"temperature": args.temperature, "seed": args.seed, "num_ctx": 4096, "num_predict": 512}}
