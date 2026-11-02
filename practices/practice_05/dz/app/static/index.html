@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Word Frequency Explorer</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+    textarea { width: 100%; min-height: 9rem; box-sizing: border-box; }
+    .row { display: flex; gap: 1rem; align-items: center; margin: 1rem 0; }
+    #status { min-height: 1.5rem; color: #444; }
+    #status[data-kind="error"] { color: #b00020; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; border-bottom: 1px solid #ddd; padding: .35rem .5rem; }
+  </style>
+</head>
+<body data-state="idle">
+  <h1>Word Frequency Explorer</h1>
+  <label for="text">Текст</label>
+  <textarea id="text" placeholder="Вставьте текст для анализа"></textarea>
+  <div class="row">
+    <label for="limit">Сколько слов</label>
+    <input id="limit" type="number" min="1" max="100" value="3">
+    <button id="analyze" type="button">Анализировать</button>
+  </div>
+  <p id="status" data-kind="info">Введите текст и нажмите Анализировать</p>
+  <table>
+    <thead>
+      <tr><th>Слово</th><th>Частота</th></tr>
+    </thead>
+    <tbody id="results"></tbody>
+  </table>
+  <script>
+    const textEl = document.getElementById("text");
+    const limitEl = document.getElementById("limit");
+    const button = document.getElementById("analyze");
+    const statusEl = document.getElementById("status");
+    const resultsEl = document.getElementById("results");
+
+    function setState(state, message, kind = "info") {
+      document.body.dataset.state = state;
+      statusEl.textContent = message;
+      statusEl.dataset.kind = kind;
+    }
+
+    function renderRows(items) {
+      resultsEl.replaceChildren();
+      for (const item of items) {
+        const row = document.createElement("tr");
+        const word = document.createElement("td");
+        const count = document.createElement("td");
+        word.textContent = item.word;
+        count.textContent = String(item.count);
+        row.append(word, count);
+        resultsEl.appendChild(row);
+      }
+    }
+
+    async function analyze() {
+      const text = textEl.value;
+      const limit = Number(limitEl.value);
+      if (!text.trim()) {
+        renderRows([]);
+        setState("error", "Введите текст", "error");
+        return;
+      }
+      if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+        renderRows([]);
+        setState("error", "Количество слов должно быть от 1 до 100", "error");
+        return;
+      }
+      button.disabled = true;
+      setState("loading", "Анализируем…");
+      try {
+        const response = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, limit })
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          renderRows([]);
+          setState("error", data?.error?.message || "Не удалось выполнить анализ", "error");
+          return;
+        }
+        renderRows(data.items);
+        if (data.items.length === 0) {
+          setState("empty", "В тексте нет слов");
+        } else {
+          setState("success", "Готово");
+        }
+      } catch (error) {
+        renderRows([]);
+        setState("error", "Сервер недоступен. Попробуйте ещё раз", "error");
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    button.addEventListener("click", analyze);
+  </script>
+</body>
+</html>

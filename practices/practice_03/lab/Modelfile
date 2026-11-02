@@ -1,4 +1,5 @@
 FROM qwen3.5:4b
+# Консервативные параметры для стабильности на Windows/CPU
 PARAMETER num_ctx 4096
 PARAMETER temperature 0.2
 SYSTEM """Ты помощник по учебному проекту. Отвечай по предоставленным фактам.

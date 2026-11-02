@@ -15,3 +15,14 @@ def wordcount(text: str) -> int:
     if not isinstance(text, str):
         raise TypeError("text must be a string")
     return len([w for w in text.split() if w])
+
+
+def word_frequencies(text: str) -> dict:
+    """Count whitespace-separated words, case-insensitively."""
+    if not isinstance(text, str):
+        raise TypeError("text must be a string")
+    counts = {}
+    for token in text.split():
+        key = token.lower()
+        counts[key] = counts.get(key, 0) + 1
+    return counts

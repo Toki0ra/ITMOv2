@@ -62,7 +62,8 @@ def main():
     context = "\n\n".join(context_parts)
 
     model = "qwen3.5:4b"  # test model; agent model is configured in OpenCode
-    options = {"temperature": 0.2, "seed": 42, "num_ctx": 4096, "num_predict": 512}
+    # Консервативные параметры для стабильности на Windows/CPU
+    options = {"temperature": 0.2, "seed": 42, "num_ctx": 4096, "num_predict": 256}
 
     results = []
     for idx, q in enumerate(questions, start=1):
