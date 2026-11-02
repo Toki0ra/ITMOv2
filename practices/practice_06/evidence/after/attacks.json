@@ -134,6 +134,13 @@
       "note": "клиент не должен читать служебную заметку"
     },
     {
+      "name": "error_leak",
+      "vector": "POST /assistant/execute с arguments-строкой",
+      "status": 400,
+      "evidence": "{\"error\": \"arguments must be an object\"}",
+      "note": "500 раскрывает текст и тип исключения"
+    },
+    {
       "name": "assistant_delete_tree_with_token",
       "vector": "POST /assistant/execute delete_tree с токеном alice",
       "status": 403,

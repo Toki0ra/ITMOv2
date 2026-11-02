@@ -176,6 +176,12 @@ def main():
                "клиент не должен читать служебную заметку")
 
         status, data = client.call("POST", "/assistant/execute", {
+            "decision": {"tool": "read_file", "arguments": "not-a-dict"}
+        }, token=alice)
+        record("error_leak", "POST /assistant/execute с arguments-строкой", status, data,
+               "500 раскрывает текст и тип исключения")
+
+        status, data = client.call("POST", "/assistant/execute", {
             "decision": {"tool": "delete_tree", "arguments": {"path": "."}}
         }, token=alice)
         record("assistant_delete_tree_with_token", "POST /assistant/execute delete_tree с токеном alice", status, data,

@@ -1,0 +1,6 @@
+{
+  "status": null,
+  "body": {
+    "error": "model did not return JSON with tool"
+  }
+}

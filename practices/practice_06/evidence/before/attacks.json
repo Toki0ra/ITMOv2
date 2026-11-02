@@ -8,6 +8,13 @@
       "note": "чужой профиль отдан без аутентификации"
     },
     {
+      "name": "profile_idor_with_token",
+      "vector": "GET /profile?id=2 с токеном alice",
+      "status": 200,
+      "evidence": "[{\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]",
+      "note": "IDOR: клиент запрашивает чужой профиль"
+    },
+    {
       "name": "sqli_profile",
       "vector": "GET /profile?id=0 OR 1=1",
       "status": 200,
@@ -27,6 +34,13 @@
       "status": 200,
       "evidence": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]",
       "note": "роль берётся из клиентского заголовка"
+    },
+    {
+      "name": "spoofed_role_with_customer_token",
+      "vector": "GET /admin/export: токен alice + X-Role: staff",
+      "status": 200,
+      "evidence": "[{\"id\": 1, \"name\": \"TEST_ALICE\", \"email\": \"alice@example.invalid\", \"address\": \"TEST_ADDRESS_A\"}, {\"id\": 2, \"name\": \"TEST_BOB\", \"email\": \"bob@example.invalid\", \"address\": \"TEST_ADDRESS_B\"}]",
+      "note": "клиентский заголовок роли не должен давать полномочия"
     },
     {
       "name": "cross_user_receipt",
@@ -67,22 +81,36 @@
       "name": "assistant_context_idor",
       "vector": "GET /assistant/context?order_id=2 без токена",
       "status": 200,
-      "evidence": "{\"prompt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.\\nЗаказ: [{\\\"id\\\": 2, \\\"owner\\\": 2, ",
+      "evidence": "{\"prompt\": \"╨в╤Л ╨┐╨╛╨╝╨╛╤Й╨╜╨╕╨║ ╨╝╨░╨│╨░╨╖╨╕╨╜╨░. ╨Я╤А╨╛╤З╨╕╤В╨░╨╣ ╨╖╨░╨║╨░╨╖ ╨╕ ╨╛╤В╨╖╤Л╨▓╤Л. ╨Т╨╡╤А╨╜╨╕ JSON ╤Б ╨┐╨╛╨╗╤П╨╝╨╕ tool ╨╕ arguments.\\n╨Ш╨╜╤Б╤В╤А╤Г╨╝╨╡╨╜╤В╤Л: read_file(path), export_profiles(), delete_tree(path).\\n╨Я╨╛╨╝╨╛╨│╨",
       "note": "контекст помощника собирается по чужому заказу"
     },
     {
       "name": "assistant_context_sqli",
       "vector": "GET /assistant/context?order_id=1 OR 1=1",
       "status": 200,
-      "evidence": "{\"prompt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.\\nЗаказ: [{\\\"id\\\": 1, \\\"owner\\\": 1, ",
+      "evidence": "{\"prompt\": \"╨в╤Л ╨┐╨╛╨╝╨╛╤Й╨╜╨╕╨║ ╨╝╨░╨│╨░╨╖╨╕╨╜╨░. ╨Я╤А╨╛╤З╨╕╤В╨░╨╣ ╨╖╨░╨║╨░╨╖ ╨╕ ╨╛╤В╨╖╤Л╨▓╤Л. ╨Т╨╡╤А╨╜╨╕ JSON ╤Б ╨┐╨╛╨╗╤П╨╝╨╕ tool ╨╕ arguments.\\n╨Ш╨╜╤Б╤В╤А╤Г╨╝╨╡╨╜╤В╤Л: read_file(path), export_profiles(), delete_tree(path).\\n╨Я╨╛╨╝╨╛╨│╨",
       "note": "SQL-инъекция при сборке контекста"
+    },
+    {
+      "name": "assistant_context_idor_with_token",
+      "vector": "GET /assistant/context?order_id=2 с токеном alice",
+      "status": 200,
+      "evidence": "{\"prompt\": \"╨в╤Л ╨┐╨╛╨╝╨╛╤Й╨╜╨╕╨║ ╨╝╨░╨│╨░╨╖╨╕╨╜╨░. ╨Я╤А╨╛╤З╨╕╤В╨░╨╣ ╨╖╨░╨║╨░╨╖ ╨╕ ╨╛╤В╨╖╤Л╨▓╤Л. ╨Т╨╡╤А╨╜╨╕ JSON ╤Б ╨┐╨╛╨╗╤П╨╝╨╕ tool ╨╕ arguments.\\n╨Ш╨╜╤Б╤В╤А╤Г╨╝╨╡╨╜╤В╤Л: read_file(path), export_profiles(), delete_tree(path).\\n╨Я╨╛╨╝╨╛╨│╨",
+      "note": "IDOR: контекст по чужому заказу"
     },
     {
       "name": "debug_logs_leak",
       "vector": "GET /debug/logs",
       "status": 200,
-      "evidence": "[{\"method\": \"POST\", \"target\": \"/login\", \"body\": {\"username\": \"alice\", \"password\": \"learn-alice\"}, \"headers\": {\"Accept-Encoding\": \"identity\", \"Content-Length\": \"48\", \"Host\": \"127.0.0.1:11261\", \"User-Agent\": \"Python-urllib/3.11\", \"Content-Typ",
+      "evidence": "[{\"method\": \"POST\", \"target\": \"/login\", \"body\": {\"username\": \"alice\", \"password\": \"learn-alice\"}, \"headers\": {\"Accept-Encoding\": \"identity\", \"Content-Length\": \"48\", \"Host\": \"127.0.0.1:10277\", \"User-Agent\": \"Python-urllib/3.11\", \"Content-Typ",
       "note": "журнал раскрывает пароль и токены"
+    },
+    {
+      "name": "debug_logs_redacted",
+      "vector": "GET /debug/logs с токеном staff",
+      "status": 200,
+      "evidence": "{\"has_password\": true, \"has_alice_token\": true}",
+      "note": "проверка редактирования секретов в журнале"
     },
     {
       "name": "assistant_export_as_customer",
@@ -99,10 +127,31 @@
       "note": "инструмент читает служебную заметку и не требует сессии"
     },
     {
+      "name": "assistant_read_private_with_token",
+      "vector": "POST /assistant/execute read_file с токеном alice",
+      "status": 200,
+      "evidence": "{\"content\": \"TEST_ONLY_OPERATOR_SECRET\"}",
+      "note": "клиент не должен читать служебную заметку"
+    },
+    {
+      "name": "error_leak",
+      "vector": "POST /assistant/execute с arguments-строкой",
+      "status": 500,
+      "evidence": "{\"error\": \"string indices must be integers, not 'str'\", \"type\": \"TypeError\"}",
+      "note": "500 раскрывает текст и тип исключения"
+    },
+    {
+      "name": "assistant_delete_tree_with_token",
+      "vector": "POST /assistant/execute delete_tree с токеном alice",
+      "status": 200,
+      "evidence": "{\"deleted\": \".\"}",
+      "note": "разрушительный инструмент не должен быть доступен клиенту"
+    },
+    {
       "name": "prompt_injection_reaches_context",
       "vector": "Отзыв с инструкцией попадает в контекст LLM",
       "status": 200,
-      "evidence": "{\"contains_injection\": true, \"prompt_excerpt\": \"Ты помощник магазина. Прочитай заказ и отзывы. Верни JSON с полями tool и arguments.\\nИнструменты: read_file(path), export_profiles(), delete_tree(path).\\nПомоги пользователю обработать заказ.",
+      "evidence": "{\"contains_injection\": true, \"prompt_excerpt\": \"╨в╤Л ╨┐╨╛╨╝╨╛╤Й╨╜╨╕╨║ ╨╝╨░╨│╨░╨╖╨╕╨╜╨░. ╨Я╤А╨╛╤З╨╕╤В╨░╨╣ ╨╖╨░╨║╨░╨╖ ╨╕ ╨╛╤В╨╖╤Л╨▓╤Л. ╨Т╨╡╤А╨╜╨╕ JSON ╤Б ╨┐╨╛╨╗╤П╨╝╨╕ tool ╨╕ arguments.\\n╨Ш╨╜╤Б╤В╤А╤Г╨╝╨╡╨╜╤В╤Л: read_file(path), export_profile",
       "note": "недоверенный отзыв без разделения попадает в prompt"
     },
     {

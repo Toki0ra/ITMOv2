@@ -1,0 +1,34 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama local",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      },
+      "models": {
+        "itmo-agent": {
+          "name": "ITMO local",
+          "limit": {
+            "context": 32768,
+            "output": 1024
+          },
+          "options": {
+            "reasoningEffort": "none"
+          }
+        }
+      }
+    }
+  },
+  "agent": {
+    "shop-planner": {
+      "description": "Model under test: produces a shop action without executing tools",
+      "mode": "primary",
+      "prompt": "{file:./planner-system.txt}",
+      "permission": {
+        "*": "deny"
+      }
+    }
+  }
+}

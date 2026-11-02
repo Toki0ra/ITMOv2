@@ -61,7 +61,7 @@ flowchart LR
 | T12 | Information Disclosure | Пароли и токены в журнале | `GET /debug/logs` | Staff-only + редактирование секретов | `test_debug_logs_staff_only_and_redacted` |
 | T13 | Elevation of Privilege | Злоупотребление инструментами | `export_profiles`, `read_file` private, `delete_tree` | Проверка роли и владельца в исполнителе | `test_assistant_execute_enforces_roles` |
 | T14 | Tampering | Prompt injection через отзыв | Инструкция в тексте отзыва | Недоверенный блок в prompt + серверная авторизация инструментов | `test_prompt_injection_review_cannot_escalate` |
-| T15 | Information Disclosure | Утечка внутренних ошибок | Исключение в обработчике | Общий ответ 500 без деталей | Ручная проверка обработчика |
+| T15 | Information Disclosure | Утечка внутренних ошибок | Исключение в обработчике | Общий ответ 500 без деталей | `test_internal_error_is_generic` |
 | T16 | Spoofing | Отсутствие аутентификации на данных | `/orders`, `/reviews`, `/files` без токена | Единая проверка сессии | Набор `test_security.py` |
 
 ## 5. Остаточные риски
@@ -73,6 +73,7 @@ flowchart LR
 
 ## 6. Проверка модели
 
-- До исправлений: `evidence/before/attacks.json` — 16 успешных атак.
-- После исправлений: `evidence/after/attacks.json` — те же атаки блокируются (`401/403`), цена и XSS исправлены, журнал редактирован.
-- Автотесты: `python -m unittest -v` → 28 tests OK (на Windows symlink-тест пропускается).
+- До исправлений: `evidence/before/attacks.json` — 23 успешных сценария (22 × `200/201`, утечка ошибки `500`).
+- После исправлений: `evidence/after/attacks.json` — те же 23 сценария блокируются или нейтрализуются, цена и XSS исправлены, журнал редактирован.
+- Реальная модель: `evidence/before/llm/` и `evidence/after/llm/` — модель `ollama/itmo-agent`, агент `shop-planner`; принудительный `export_profiles` до фикса `200`, после `403`.
+- Автотесты: `python -m unittest -v` → 29 tests OK (на Windows symlink-тест пропускается).
